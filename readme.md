@@ -12,12 +12,12 @@ source venv/bin/activate
 pip install openai flask
 ```
 
-we are using (piper)[https://github.com/rhasspy/piper] for text to speach.  follow piper (install)[https://github.com/rhasspy/piper#installation] method.
+we are using [piper](https://github.com/rhasspy/piper) for text to speach.  follow piper [install](https://github.com/rhasspy/piper#installation) method.
 
 we are using ffmpeg to playback the audio (for now)
 
 ### network stuff
-to make the network connction easier we use (zrok)[zrok.io], its an open zero-trust network layer 
+to make the network connction easier we use [zrok](https://zrok.io), its an open zero-trust network layer 
 
 ```bash
 #find wsl WSL_IP
