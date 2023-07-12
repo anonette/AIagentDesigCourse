@@ -3,7 +3,8 @@ import openai
 import subprocess
 import datetime
 import csv
-from flask import Flask, request
+
+from flask import Flask, request, after_this_request
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
@@ -11,7 +12,7 @@ app = Flask(__name__)
 
 def chat_oracle():
     completion = openai.ChatCompletion.create(
-        model="gpt-4",
+        model="gpt-3.5-turbo",
         temperature=0.77,
         messages=[
             {
@@ -29,11 +30,6 @@ def chat_oracle():
 
 @app.route('/tts', methods=['POST'])
 def text_to_speech():
-
-    # text = request.json.get('text', '')
-    # if text:
-    #     subprocess.run(["./run_piper.sh", text], check=True)
-    
     oracle_output = chat_oracle()
 
     # Generate a timestamped filename for the output audio file
@@ -45,15 +41,20 @@ def text_to_speech():
     piper = subprocess.Popen(piper_cmd, stdin=subprocess.PIPE)
     piper.communicate(oracle_output.encode())
 
-    # Play the audio file
-    subprocess.run(["/mnt/c/ProgramData/chocolatey/bin/ffplay.exe", "-autoexit", output_file], check=True)
-    
-    # Save results to CSV file
-    with open('results.csv', 'a', newline='') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow([oracle_output, output_file])
-    
-    return 'The Oracle has spoken', 200
+    @after_this_request
+    def play_audio(response):
+        if piper.returncode == 0:
+            # Play the audio file
+            subprocess.run(["/mnt/c/ProgramData/chocolatey/bin/ffplay.exe", "-autoexit", output_file], check=True)
+            
+            # Save results to CSV file
+            with open('results.csv', 'a', newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow([oracle_output, output_file])
+        return response
+
+    return oracle_output, 200
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
