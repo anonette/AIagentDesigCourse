@@ -12,7 +12,7 @@ app = Flask(__name__)
 
 def chat_oracle():
     completion = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
+        model="gpt-4",
         temperature=0.77,
         messages=[
             {
@@ -45,7 +45,7 @@ def text_to_speech():
     def play_audio(response):
         if piper.returncode == 0:
             # Play the audio file
-            subprocess.run(["/mnt/c/ProgramData/chocolatey/bin/ffplay.exe", "-autoexit", output_file], check=True)
+            subprocess.run(["/mnt/c/ProgramData/chocolatey/bin/ffplay.exe","-af", "adelay=3s:all=1", "-autoexit", output_file], check=True)
             
             # Save results to CSV file
             with open('results.csv', 'a', newline='') as csvfile:
