@@ -1,32 +1,38 @@
 import os
-import openai
+from openai import OpenAI
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 import subprocess
 import datetime
 import csv
 
 from flask import Flask, request, after_this_request
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+
 
 app = Flask(__name__)
 
 def chat_oracle():
-    completion = openai.ChatCompletion.create(
-        model="gpt-4",
-        temperature=0.77,
-        messages=[
-            {
-                "role": "system",
-                "content": "You are Pythia from the new temple of Delphi. known to be ironic and funny. your answers short and a bit cryptic to the layman.",
-            },
-            {
-                "role": "user",
-                "content": "translates a folklore proverb into an EU AI act regulation recommendation that is relevant to AI issue. Reply with only the adapted proverb and include no commentary or explantion of the proverb",
-            },
-        ],
-    )
+    try:
+        completion = client.chat.completions.create(model="gpt-4",
+            temperature=0.77,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are Pythia from the new temple of Delphi. Known to be ironic and funny. Your answers short and a bit cryptic to the layman.",
+                },
+                {
+                    "role": "user",
+                    "content": "translates a folklore proverb into an EU AI act regulation recommendation that is relevant to AI issue. Reply with only the adapted proverb and include no commentary or explanation of the proverb",
+                },
+            ])
 
-    return completion.choices[0].message["content"]
+        # Access the message content using the correct attribute
+        return completion.choices[0].message.content
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return None
+
 
 @app.route('/tts', methods=['POST'])
 def text_to_speech():
