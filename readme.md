@@ -1,93 +1,63 @@
-# slimeGPT
-repo for the [slimeGPT workshop](https://wiki.idiot.io/slimeGPT)
+# Oracle AI
 
-## install deps
-on windows WSL
+An AI-powered Oracle that generates mystical insights by combining traditional proverbs with AI regulations, complete with voice synthesis.
+
+## Requirements
+
+### API Keys
+You need to set up two API keys in a `.env` file:
+- `OPENAI_API_KEY` - Get from [OpenAI](https://platform.openai.com/)
+- `ELEVENLABS_API_KEY` - Get from [ElevenLabs](https://elevenlabs.io/)
+
+### Python Environment
+1. Python 3.x
+2. Virtual Environment (venv)
+
+### Dependencies
+The project requires the following Python packages:
+- `openai` - For GPT-4 integration and AI responses
+- `elevenlabs` - For text-to-speech voice synthesis
+- `python-dotenv` - For environment variable management
+- `flask` and `flask-socketio` - For web server functionality
+- `python-socketio` - For WebSocket support
+- `streamlit` - For web interface
+
+## Setup
+
+1. Create and activate virtual environment:
 ```bash
-git clone git@github.com:anonette/slimeGPT.git
-cd slimeGPT
-
 python -m venv venv
-source venv/bin/activate
-pip install openai flask
+.\venv\Scripts\activate  # Windows
+source venv/bin/activate  # Unix/MacOS
 ```
 
-we are using [piper](https://github.com/rhasspy/piper) for text to speach.  follow piper [install](https://github.com/rhasspy/piper#installation) method.
-
-we are using ffmpeg to playback the audio (for now)
-
-### run
+2. Install requirements:
 ```bash
-#you will need to supply an openai api_key
-export OPENAI_API_KEY="sk-xxxxxxxxxxxxxxxxxx"
-python server.py
+pip install -r requirments.txt
 ```
 
-to test locally using curl
+3. Create a `.env` file with your API keys:
+```
+OPENAI_API_KEY="your-openai-key"
+ELEVENLABS_API_KEY="your-elevenlabs-key"
+```
+
+## Usage
+
+### Core Oracle AI
+Run the main Oracle AI script:
 ```bash
-curl https://8ao7p7gfn784.share.zrok.io/tts -X POST -H "Content-Type: application/json"
+python slimeGPT2024.py
 ```
+- Press Enter to generate each new Oracle response
+- Each response includes a proverb and an AI regulation
+- Responses are both displayed and spoken aloud
 
-or using android using [http-shortcut](https://http-shortcuts.rmy.ch/)
-
-<details>
-<summary>import the following json to the app to test</summary>
-
-```json
-{
-  "categories": [
-    {
-      "id": "81e0defe-bb89-4c10-9113-d7ca2b75d469",
-      "name": "Shortcuts",
-      "shortcuts": [
-        {
-          "contentType": "application/json",
-          "description": "test TTS ",
-          "iconName": "flat_color_plugin",
-          "id": "dc08b46b-d50b-443e-9b16-df272db84090",
-          "method": "POST",
-          "name": "tts public ",
-          "responseHandling": {},
-          "timeout": 0,
-          "url": "https://8ao7p7gfn784.share.zrok.io/tts"
-        }
-      ]
-    }
-  ],
-  "compatibilityVersion": 60,
-  "version": 66
-}
-```
-
-</details>
-
-
-### network stuff
-to keep the API keys hidden from the esp32 we run the api on a (local) server on my win pc. this means we need some kind of easy method to talk between the esp32 http endpoint and the server. 
-
-to make the network connction easier we use [zrok](https://zrok.io), its an open zero-trust network layer that punches throu firewalls in public internet hotspots :)
-
+### Web Interface
+Run the Streamlit web interface:
 ```bash
-#find wsl WSL_IP
-$ ip addr show eth0
-192.168.0.229
+streamlit run streamlit_app2.py
 ```
-in powershell on windows host
-```powershell
-#port fwd
-$ netsh interface portproxy add v4tov4 listenport=5000 listenaddress=0.0.0.0 connectport=5000 connectaddress=192.168.0.229
-
-#show open ports
-$ netsh interface portproxy show v4tov4
-
-#release port, if needed
-netsh interface portproxy delete v4tov4 listenaddress=0.0.0.0 listenport=5000
-```
-run zrok
-```powershell
-#run reserved zrok endpoint (on win host)
-PS C:\bin> .\zrok.exe reserve public 127.0.0.1:5000
-    your reserved share token is '8ao7p7gfn784'
-    reserved frontend endpoint: https://8ao7p7gfn784.share.zrok.io
-c:\bin> .\zrok.exe share reserved 8ao7p7gfn784
-```
+- Upload log files for processing
+- Process messages with different voice options
+- Listen to audio playback in the browser
