@@ -2,16 +2,58 @@
 
 An AI-powered Oracle that generates mystical insights by combining traditional proverbs with AI regulations, complete with voice synthesis.
 
-## Requirements
+## Visual Studio Code Setup
+
+1. Open the project in VS Code:
+   - File -> Open Folder -> Select the project folder
+
+2. Install recommended extensions:
+   - Python (ms-python.python)
+   - Python Environment Manager
+
+3. Set up the environment:
+   - Open VS Code terminal (View -> Terminal)
+   - Create virtual environment:
+     ```bash
+     python -m venv venv
+     ```
+   - VS Code will detect the new environment and ask to select it as interpreter
+   - Or manually select: Ctrl+Shift+P -> "Python: Select Interpreter" -> Choose ./venv/Scripts/python.exe
+
+4. Install requirements:
+   ```bash
+   pip install -r requirments.txt
+   ```
+
+5. Set up API keys:
+   - Create .env file in the root directory
+   - Add your keys:
+     ```
+     OPENAI_API_KEY="your-openai-key"
+     ELEVENLABS_API_KEY="your-elevenlabs-key"
+     ```
+
+6. Run the Oracle:
+   - Open slimeGPT2024.py
+   - Click the "Run Python File" play button in the top right
+   - Or use the integrated terminal:
+     ```bash
+     python slimeGPT2024.py
+     ```
+
+## Quick Start (Windows)
+Alternatively, simply double-click `start.bat` and it will:
+1. Create a virtual environment if needed
+2. Install all required packages
+3. Create a template .env file if needed (you'll need to add your API keys)
+4. Start the Oracle AI
+
+## Manual Setup
 
 ### API Keys
 You need to set up two API keys in a `.env` file:
 - `OPENAI_API_KEY` - Get from [OpenAI](https://platform.openai.com/)
 - `ELEVENLABS_API_KEY` - Get from [ElevenLabs](https://elevenlabs.io/)
-
-### Python Environment
-1. Python 3.x
-2. Virtual Environment (venv)
 
 ### Dependencies
 The project requires the following Python packages:
@@ -21,26 +63,6 @@ The project requires the following Python packages:
 - `flask` and `flask-socketio` - For web server functionality
 - `python-socketio` - For WebSocket support
 - `streamlit` - For web interface
-
-## Setup
-
-1. Create and activate virtual environment:
-```bash
-python -m venv venv
-.\venv\Scripts\activate  # Windows
-source venv/bin/activate  # Unix/MacOS
-```
-
-2. Install requirements:
-```bash
-pip install -r requirments.txt
-```
-
-3. Create a `.env` file with your API keys:
-```
-OPENAI_API_KEY="your-openai-key"
-ELEVENLABS_API_KEY="your-elevenlabs-key"
-```
 
 ## Usage
 
