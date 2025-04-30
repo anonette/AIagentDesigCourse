@@ -47,12 +47,8 @@ if not API_KEY.startswith("sk-"):
     st.stop()
 
 try:
-    # Initialize the OpenAI client with explicit configuration
-    client = OpenAI(
-        api_key=API_KEY,
-        timeout=30.0,  # 30 second timeout
-        max_retries=3  # Retry failed requests up to 3 times
-    )
+    # Initialize the OpenAI client with minimal configuration
+    client = OpenAI(api_key=API_KEY)
     
     # Test the client with a simple request
     client.models.list()
