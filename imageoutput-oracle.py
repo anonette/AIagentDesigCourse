@@ -7,11 +7,18 @@ import requests
 from PIL import Image
 from io import BytesIO
 
-# Load API key from .env file
-load_dotenv()
-API_KEY = os.getenv("OPENAI_API_KEY")
+# Try to load from .env file, but don't fail if it doesn't exist
+try:
+    load_dotenv()
+except Exception as e:
+    st.warning("Could not load .env file, but continuing anyway...")
 
-# Initialize the OpenAI client
+# Initialize the OpenAI client with API key from environment or Streamlit secrets
+API_KEY = os.getenv("OPENAI_API_KEY") or st.secrets.get("OPENAI_API_KEY")
+if not API_KEY:
+    st.error("OpenAI API key not found. Please set it in Streamlit secrets or .env file.")
+    st.stop()
+
 client = OpenAI(api_key=API_KEY)
 
 def generate_sacred_symbol(name):

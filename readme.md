@@ -1,85 +1,58 @@
-# Oracle AI
+# Sacred Symbol Oracle
 
-An AI-powered Oracle that generates mystical insights by combining traditional proverbs with AI regulations, complete with voice synthesis.
+A mystical web application that generates unique sacred symbols based on your name using OpenAI's DALL-E.
 
-## Visual Studio Code Setup
+## Features
 
-1. Open the project in VS Code:
-   - File -> Open Folder -> Select the project folder
+- Beautiful Streamlit interface
+- Secure API key handling
+- Image generation with DALL-E
+- Download generated symbols
+- Detailed interpretations
 
-2. Install recommended extensions:
-   - Python (ms-python.python)
-   - Python Environment Manager
+## Local Setup
 
-3. Set up the environment:
-   - Open VS Code terminal (View -> Terminal)
-   - Create virtual environment:
-     ```bash
-     python -m venv venv
-     ```
-   - VS Code will detect the new environment and ask to select it as interpreter
-   - Or manually select: Ctrl+Shift+P -> "Python: Select Interpreter" -> Choose ./venv/Scripts/python.exe
-
-4. Install requirements:
+1. Clone this repository
+2. Install dependencies:
    ```bash
-   pip install -r requirments.txt
+   pip install -r requirements.txt
+   ```
+3. Create a `.env` file in the root directory with your OpenAI API key:
+   ```
+   OPENAI_API_KEY=your_api_key_here
+   ```
+4. Run the application locally:
+   ```bash
+   streamlit run imageoutput-oracle.py
    ```
 
-5. Set up API keys:
-   - Create .env file in the root directory
-   - Add your keys:
+## Online Deployment
+
+### Deploying to Streamlit Cloud
+
+1. Create a free account at [Streamlit Cloud](https://streamlit.io/cloud)
+2. Connect your GitHub repository
+3. In the Streamlit Cloud dashboard:
+   - Go to "Settings" > "Secrets"
+   - Add your OpenAI API key:
      ```
-     OPENAI_API_KEY="your-openai-key"
-     ELEVENLABS_API_KEY="your-elevenlabs-key"
+     OPENAI_API_KEY=your_api_key_here
      ```
+4. Deploy the app
 
-6. Run the Oracle:
-   - Open slimeGPT2024.py
-   - Click the "Run Python File" play button in the top right
-   - Or use the integrated terminal:
-     ```bash
-     python slimeGPT2024.py
-     ```
+### Deploying to other platforms
 
-## Quick Start (Windows)
-Alternatively, simply double-click `start.bat` and it will:
-1. Create a virtual environment if needed
-2. Install all required packages
-3. Create a template .env file if needed (you'll need to add your API keys)
-4. Start the Oracle AI
+For other platforms like Heroku or Railway, you'll need to:
+1. Set up the environment variable `OPENAI_API_KEY` in your platform's configuration
+2. Follow the platform-specific deployment instructions
+3. Make sure to include all dependencies from `requirements.txt`
 
-## Manual Setup
+## Security Notes
 
-### API Keys
-You need to set up two API keys in a `.env` file:
-- `OPENAI_API_KEY` - Get from [OpenAI](https://platform.openai.com/)
-- `ELEVENLABS_API_KEY` - Get from [ElevenLabs](https://elevenlabs.io/)
+- Never commit your `.env` file or expose your API key
+- The application uses secure input fields for API key entry
+- API keys are stored in environment variables
 
-### Dependencies
-The project requires the following Python packages:
-- `openai` - For GPT-4 integration and AI responses
-- `elevenlabs` - For text-to-speech voice synthesis
-- `python-dotenv` - For environment variable management
-- `flask` and `flask-socketio` - For web server functionality
-- `python-socketio` - For WebSocket support
-- `streamlit` - For web interface
+## License
 
-## Usage
-
-### Core Oracle AI
-Run the main Oracle AI script:
-```bash
-python slimeGPT2024.py
-```
-- Press Enter to generate each new Oracle response
-- Each response includes a proverb and an AI regulation
-- Responses are both displayed and spoken aloud
-
-### Web Interface
-Run the Streamlit web interface:
-```bash
-streamlit run streamlit_app2.py
-```
-- Upload log files for processing
-- Process messages with different voice options
-- Listen to audio playback in the browser
+MIT License
