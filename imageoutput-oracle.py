@@ -2,7 +2,7 @@ import os
 import time
 import streamlit as st
 from dotenv import load_dotenv
-import openai
+from openai import OpenAI
 import requests
 from PIL import Image
 from io import BytesIO
@@ -47,11 +47,11 @@ if not API_KEY.startswith("sk-"):
     st.stop()
 
 try:
-    # Set the API key directly
-    openai.api_key = API_KEY
+    # Initialize the OpenAI client
+    client = OpenAI(api_key=API_KEY)
     
-    # Test the API key
-    openai.Model.list()
+    # Test the client with a simple request
+    client.models.list()
 except Exception as e:
     st.error(f"Failed to initialize OpenAI client: {str(e)}")
     st.stop()
@@ -68,14 +68,15 @@ def generate_sacred_symbol(name):
     
     try:
         # Generate the image using DALL-E
-        response = openai.Image.create(
+        response = client.images.generate(
+            model="dall-e-3",
             prompt=prompt,
             n=1,
             size="1024x1024"
         )
         
         # Get the image URL
-        image_url = response['data'][0]['url']
+        image_url = response.data[0].url
         
         # Download the image
         image_response = requests.get(image_url)
@@ -108,7 +109,7 @@ def main():
         api_key = st.text_input("OpenAI API Key", type="password", value=API_KEY or "")
         if api_key:
             os.environ["OPENAI_API_KEY"] = api_key
-            openai.api_key = api_key
+            client.api_key = api_key
     
     # Main content
     name = st.text_input("Enter your name:", placeholder="Your name here...")
@@ -116,7 +117,7 @@ def main():
     if st.button("Generate Sacred Symbol"):
         if not name:
             st.warning("Please enter your name first!")
-        elif not openai.api_key:
+        elif not client.api_key:
             st.error("Please enter your OpenAI API key in the sidebar!")
         else:
             with st.spinner("Generating your sacred symbol... This may take a moment."):
