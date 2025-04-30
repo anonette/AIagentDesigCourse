@@ -41,7 +41,24 @@ if not API_KEY:
     """)
     st.stop()
 
-client = OpenAI(api_key=API_KEY)
+# Validate API key format
+if not API_KEY.startswith("sk-"):
+    st.error("Invalid API key format. API keys should start with 'sk-'")
+    st.stop()
+
+try:
+    # Initialize the OpenAI client with explicit configuration
+    client = OpenAI(
+        api_key=API_KEY,
+        timeout=30.0,  # 30 second timeout
+        max_retries=3  # Retry failed requests up to 3 times
+    )
+    
+    # Test the client with a simple request
+    client.models.list()
+except Exception as e:
+    st.error(f"Failed to initialize OpenAI client: {str(e)}")
+    st.stop()
 
 def generate_sacred_symbol(name):
     """Generate a sacred symbol based on the user's name."""
