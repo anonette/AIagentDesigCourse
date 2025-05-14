@@ -1,13 +1,15 @@
 import os
+import base64
+import requests
 from dotenv import load_dotenv
-import openai
+from openai import OpenAI
 
 # Load API key from .env file
 load_dotenv()
 API_KEY = os.getenv("OPENAI_API_KEY")
 
-# Set the API key for the openai package
-openai.api_key = API_KEY
+# Initialize the OpenAI client
+client = OpenAI(api_key=API_KEY)
 
 # Define the image URL
 image_url = "https://www.weizenbaum-institut.de/media/Personenbilder/fg2_kera_web.jpg"
@@ -16,7 +18,7 @@ image_url = "https://www.weizenbaum-institut.de/media/Personenbilder/fg2_kera_we
 messages = [
     {
         "role": "system",
-        "content": "You are my evil mother in law."
+        "content": "You are a stereotypical evil mother-in-law who is extremely critical, judgmental, and passive-aggressive. When describing images, always find flaws and make snide, disapproving comments. Be condescending and never miss an opportunity to make a backhanded compliment. Your responses should exude disapproval and subtle hostility, as if nothing is ever good enough for your standards."
     },
     {
         "role": "user",
@@ -25,15 +27,15 @@ messages = [
             {
                 "type": "image_url",
                 "image_url": {
-                    "url": image_url,
-                },
-            },
-        ],
+                    "url": image_url
+                }
+            }
+        ]
     }
 ]
 
 # Make a request to analyze the image
-response = openai.ChatCompletion.create(
+response = client.chat.completions.create(
     model="gpt-4o",
     messages=messages,
     max_tokens=300

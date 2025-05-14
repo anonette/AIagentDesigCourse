@@ -7,54 +7,19 @@ import requests
 from PIL import Image
 from io import BytesIO
 
-# Set page configuration (must be first Streamlit command)
-st.set_page_config(
-    page_title="Sacred Symbol Oracle",
-    page_icon="🔮",
-    layout="centered"
-)
-
 # Try to load from .env file, but don't fail if it doesn't exist
 try:
     load_dotenv()
 except Exception as e:
-    pass  # Silently continue if .env file doesn't exist
-
-# Get API key from environment or Streamlit secrets
-env_key = os.getenv("OPENAI_API_KEY")
-secrets_key = None
-
-# Try to get from Streamlit secrets
-try:
-    secrets_key = st.secrets["OPENAI_API_KEY"]
-except Exception as e:
-    pass  # Silently continue if secrets don't exist
+    st.warning("Could not load .env file, but continuing anyway...")
 
 # Initialize the OpenAI client with API key from environment or Streamlit secrets
-API_KEY = env_key or secrets_key
-
+API_KEY = os.getenv("OPENAI_API_KEY") or st.secrets.get("OPENAI_API_KEY")
 if not API_KEY:
-    st.error("""
-    OpenAI API key not found. Please ensure:
-    1. For local development: Create a .env file with OPENAI_API_KEY=your_key
-    2. For deployment: Add the key in Streamlit Cloud Secrets as OPENAI_API_KEY=your_key
-    """)
+    st.error("OpenAI API key not found. Please set it in Streamlit secrets or .env file.")
     st.stop()
 
-# Validate API key format
-if not API_KEY.startswith("sk-"):
-    st.error("Invalid API key format. API keys should start with 'sk-'")
-    st.stop()
-
-try:
-    # Initialize the OpenAI client
-    client = OpenAI(api_key=API_KEY)
-    
-    # Test the client with a simple request
-    client.models.list()
-except Exception as e:
-    st.error(f"Failed to initialize OpenAI client: {str(e)}")
-    st.stop()
+client = OpenAI(api_key=API_KEY)
 
 def generate_sacred_symbol(name):
     """Generate a sacred symbol based on the user's name."""
@@ -69,7 +34,6 @@ def generate_sacred_symbol(name):
     try:
         # Generate the image using DALL-E
         response = client.images.generate(
-            model="dall-e-3",
             prompt=prompt,
             n=1,
             size="1024x1024"
@@ -97,6 +61,12 @@ def generate_sacred_symbol(name):
         return None, None
 
 def main():
+    st.set_page_config(
+        page_title="Sacred Symbol Oracle",
+        page_icon="🔮",
+        layout="centered"
+    )
+    
     st.title("🔮 Sacred Symbol Oracle")
     st.markdown("""
     Welcome to the Sacred Symbol Oracle! This mystical tool will generate a unique sacred symbol 

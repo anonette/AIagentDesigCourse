@@ -1,17 +1,75 @@
 import streamlit as st
 import os
 import time
-from dotenv import load_dotenv
 from openai import OpenAI
 import requests
 from PIL import Image
 from io import BytesIO
 
-# Load environment variables
-load_dotenv()
+# Initialize session state for debugging
+if 'debug_info' not in st.session_state:
+    st.session_state.debug_info = []
 
-# Initialize OpenAI client
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+def log_debug(message):
+    st.session_state.debug_info.append(message)
+
+# Display any startup debug information
+st.write("Starting Sacred Symbol Oracle...")
+log_debug("Application starting")
+
+# Function to get API key
+def get_api_key():
+    # First try environment variable
+    api_key = os.getenv("OPENAI_API_KEY")
+    if api_key:
+        log_debug("Found API key in environment variables")
+        return api_key
+        
+    # Then try streamlit secrets
+    try:
+        if 'openai' in st.secrets:
+            log_debug("Found API key in Streamlit secrets")
+            return st.secrets['openai']['OPENAI_API_KEY']
+    except Exception as e:
+        log_debug(f"Error reading Streamlit secrets: {str(e)}")
+    
+    log_debug("No API key found")
+    return None
+
+# Display debug information
+st.sidebar.markdown("### 🔧 Debug Information")
+for msg in st.session_state.debug_info:
+    st.sidebar.text(msg)
+
+# Get API key
+api_key = get_api_key()
+
+if not api_key:
+    st.error("""
+    ⚠️ OpenAI API key not found! 
+    
+    Please set up your API key in one of these ways:
+    1. In environment variables as OPENAI_API_KEY
+    2. In `.streamlit/secrets.toml`:
+       ```toml
+       [openai]
+       OPENAI_API_KEY = "your-key-here"
+       ```
+    """)
+    st.stop()
+
+try:
+    client = OpenAI(api_key=api_key)
+    log_debug("OpenAI client initialized successfully")
+except Exception as e:
+    st.error(f"Error initializing OpenAI client: {str(e)}")
+    log_debug(f"OpenAI client error: {str(e)}")
+    st.stop()
+
+# Debug information
+st.write("Debug Info:")
+st.write(f"Current file: {__file__}")
+st.write(f"Streamlit version: {st.__version__}")
 
 # Set page title and description
 st.title("✨ Sacred Symbol Oracle")
