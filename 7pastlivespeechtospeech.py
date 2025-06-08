@@ -6,8 +6,10 @@ import requests
 from PIL import Image
 from io import BytesIO
 import pygame
-import speech_recognition as sr
 from openai import OpenAI
+import tempfile
+import wave
+import struct
 
 # Load API key from .env file
 load_dotenv()
@@ -16,94 +18,124 @@ API_KEY = os.getenv("OPENAI_API_KEY")
 # Initialize OpenAI client
 client = OpenAI(api_key=API_KEY)
 
+# Flag to track if speech recognition is available
+SPEECH_RECOGNITION_AVAILABLE = False
+
+# Try to import PyAudio - we'll just set the flag to False if it fails
+try:
+    import pyaudio  # type: ignore # Suppress Pylance warning
+    p = pyaudio.PyAudio()
+    SPEECH_RECOGNITION_AVAILABLE = True
+    print("Speech recognition is available!")
+except (ImportError, ModuleNotFoundError):
+    print("PyAudio not installed. Running in text-only mode.")
+
 # Initialize pygame mixer for audio playback
 pygame.mixer.init()
 
 # Cache for audio files to avoid regenerating common messages
 audio_cache = {}
 
-def listen_for_name():
-    """Listen for the user's name using speech recognition."""
-    recognizer = sr.Recognizer()
-    
-    # Optimize recognizer settings for faster response
-    recognizer.pause_threshold = 0.5  # Shorter pause threshold
-    recognizer.energy_threshold = 300  # Lower energy threshold for faster detection
-    
-    print("\nPlease say your name clearly...")
-    print("Listening... (speak now)")
+def record_audio(duration=5):
+    """Record audio from the microphone if PyAudio is available."""
+    if not SPEECH_RECOGNITION_AVAILABLE:
+        return None
     
     try:
-        with sr.Microphone() as source:
-            # Shorter ambient noise adjustment
-            recognizer.adjust_for_ambient_noise(source, duration=0.5)
-            
-            # Listen for audio input with shorter timeout
-            audio = recognizer.listen(source, timeout=5, phrase_time_limit=3)
-            
-            print("Processing...")
-            
-            # Convert speech to text
-            name = recognizer.recognize_google(audio)
-            
-            print(f"I heard your name as: {name}")
-            print("Continuing with this name...")
-            
-            return name
+        # Set recording parameters
+        FORMAT = pyaudio.paInt16
+        CHANNELS = 1
+        RATE = 16000
+        CHUNK = 1024
+        
+        # Start recording
+        print("Recording... Speak now.")
+        audio = p.open(format=FORMAT, channels=CHANNELS,
+                        rate=RATE, input=True,
+                        frames_per_buffer=CHUNK)
+        
+        frames = []
+        for i in range(0, int(RATE / CHUNK * duration)):
+            data = audio.read(CHUNK)
+            frames.append(data)
+        
+        print("Recording finished.")
+        
+        # Stop recording
+        audio.stop_stream()
+        audio.close()
+        
+        # Create a temporary WAV file
+        temp_file = tempfile.NamedTemporaryFile(suffix='.wav', delete=False)
+        wf = wave.open(temp_file.name, 'wb')
+        wf.setnchannels(CHANNELS)
+        wf.setsampwidth(p.get_sample_size(FORMAT))
+        wf.setframerate(RATE)
+        wf.writeframes(b''.join(frames))
+        wf.close()
+        
+        return temp_file.name
     
-    except sr.WaitTimeoutError:
-        print("No speech detected. Please type your name instead.")
-        return input("Your name: ")
-    except sr.UnknownValueError:
-        print("Could not understand audio. Please type your name instead.")
-        return input("Your name: ")
-    except sr.RequestError as e:
-        print(f"Could not request results; {e}")
-        return input("Please type your name: ")
     except Exception as e:
-        print(f"Error during speech recognition: {e}")
-        return input("Please type your name: ")
+        print(f"Error recording audio: {e}")
+        return None
+
+def transcribe_with_whisper(audio_file_path):
+    """Transcribe audio using OpenAI's Whisper API."""
+    if not audio_file_path:
+        return None
+    
+    try:
+        with open(audio_file_path, "rb") as audio_file:
+            response = client.audio.transcriptions.create(
+                model="whisper-1",
+                file=audio_file
+            )
+        
+        # Delete the temporary file
+        try:
+            os.unlink(audio_file_path)
+        except:
+            pass
+            
+        return response.text
+    
+    except Exception as e:
+        print(f"Error transcribing audio: {e}")
+        return None
+
+def listen_for_name():
+    """Listen for the user's name or get it via text input."""
+    if SPEECH_RECOGNITION_AVAILABLE:
+        print("\nPlease say your name clearly...")
+        audio_file_path = record_audio(duration=3)
+        if audio_file_path:
+            name = transcribe_with_whisper(audio_file_path)
+            if name:
+                print(f"I heard your name as: {name}")
+                return name.strip()
+    
+    # Fallback to text input if speech recognition failed or isn't available
+    print("Please type your name:")
+    return input("Your name: ")
 
 def listen_to_speech():
-    """Listen to the user's speech and convert it to text."""
-    recognizer = sr.Recognizer()
+    """Listen to the user's speech or get input via text."""
+    if SPEECH_RECOGNITION_AVAILABLE:
+        print("\nListening... (Speak your question about your past life)")
+        audio_file_path = record_audio(duration=5)
+        if audio_file_path:
+            text = transcribe_with_whisper(audio_file_path)
+            if text:
+                print(f"You asked: {text}")
+                return text.strip()
     
-    # Optimize recognizer settings for faster response
-    recognizer.pause_threshold = 0.5  # Shorter pause threshold
-    recognizer.energy_threshold = 300  # Lower energy threshold for faster detection
-    
-    print("\nListening... (Speak your question about your past life)")
-    
-    try:
-        with sr.Microphone() as source:
-            # Shorter ambient noise adjustment
-            recognizer.adjust_for_ambient_noise(source, duration=0.5)
-            
-            # Listen for audio input with shorter timeout
-            audio = recognizer.listen(source, timeout=5, phrase_time_limit=5)
-            
-            print("Processing your question...")
-            
-            # Convert speech to text
-            text = recognizer.recognize_google(audio)
-            
-            print(f"You asked: {text}")
-            return text
-    
-    except sr.WaitTimeoutError:
-        print("No speech detected. Please try again or type your question.")
-        user_input = input("Your question (or press Enter to try voice again): ")
-        return user_input if user_input else None
-    except sr.UnknownValueError:
-        print("Could not understand audio. Please try again or type your question.")
-        user_input = input("Your question (or press Enter to try voice again): ")
-        return user_input if user_input else None
-    except sr.RequestError as e:
-        print(f"Could not request results; {e}")
-        return input("Please type your question: ")
-    except Exception as e:
-        print(f"Error during speech recognition: {e}")
-        return input("Please type your question: ")
+    # Fallback to text input if speech recognition failed or isn't available
+    print("Please type your question about your past life:")
+    question = input("Your question (or type 'exit' to quit): ")
+    if question:
+        print(f"You asked: {question}")
+    return question
 
 def generate_past_life_story(name):
     """Generate a story about the user's past life."""
@@ -298,7 +330,11 @@ def speak_welcome_message():
 
 def main():
     """Main function to run the oracle."""
-    print("=== Past Life Oracle with Voice Interaction (Optimized Version) ===")
+    if SPEECH_RECOGNITION_AVAILABLE:
+        print("=== Past Life Oracle with Voice Interaction ===")
+    else:
+        print("=== Past Life Oracle (Text-Only Mode) ===")
+    
     print("This oracle will reveal how you looked in your past life and tell your story.")
     print("You will receive both a visual representation and an audio narration.")
     

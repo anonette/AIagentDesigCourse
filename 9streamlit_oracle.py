@@ -136,7 +136,7 @@ if generate_button and name:
     
     if image and image_path:
         # Display the image
-        st.image(image, caption=f"Sacred Symbol for {name}", use_column_width=True)
+        st.image(image, caption=f"Sacred Symbol for {name}", use_container_width=True)
         
         # Display interpretation
         st.markdown("### 🌟 Interpretation of Your Sacred Symbol")

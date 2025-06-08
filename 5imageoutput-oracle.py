@@ -94,7 +94,7 @@ def main():
                 image, image_path = generate_sacred_symbol(name)
                 
                 if image:
-                    st.image(image, caption=f"Sacred Symbol for {name}", use_column_width=True)
+                    st.image(image, caption=f"Sacred Symbol for {name}", use_container_width=True)
                     
                     # Interpretation
                     st.markdown(f"""

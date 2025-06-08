@@ -57,10 +57,27 @@ def analyze_image(image_url):
     print("\nAnalyzing the image...")
     
     try:
-        messages = [
+        # For image_path, we'll download the image and convert to base64
+        if image_url.startswith('http'):
+            # Download the image
+            image_response = requests.get(image_url)
+            image_data = BytesIO(image_response.content).getvalue()
+            import base64
+            # Convert to base64
+            base64_image = base64.b64encode(image_data).decode('utf-8')
+            # Create the proper data URL format
+            data_url = f"data:image/jpeg;base64,{base64_image}"
+        else:
+            # If it's a local path
+            with open(image_url, "rb") as image_file:
+                image_data = image_file.read()
+                import base64
+                base64_image = base64.b64encode(image_data).decode('utf-8')
+                data_url = f"data:image/jpeg;base64,{base64_image}"
+          messages = [
             {
                 "role": "system",
-                "content": "You are a creative and detailed image analyst. Describe what you see in the image with vivid details that could be used to recreate a similar but not identical image. Focus on the main elements, colors, composition, and mood. Your description should be 3-4 sentences long."
+                "content": "You are a kid playing a game of telephone."
             },
             {
                 "role": "user",
@@ -69,7 +86,7 @@ def analyze_image(image_url):
                     {
                         "type": "image_url",
                         "image_url": {
-                            "url": image_url,
+                            "url": data_url,
                         },
                     },
                 ],
@@ -77,8 +94,9 @@ def analyze_image(image_url):
         ]
         
         response = client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-4o",  # Updated to use gpt-4o which has vision capabilities
             messages=messages,
+            temperature=0.9,
             max_tokens=300
         )
         
